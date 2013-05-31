@@ -4,6 +4,11 @@ module Gunclip
 
       include Gunclip::Model::Request
 
+      include Gunclip::Model::Callbacks
+
+      #validations
+      include ActiveModel::Validations
+
       def initialize params
         params.deep_stringify_keys!
         if params["_id"].present?
@@ -20,6 +25,7 @@ module Gunclip
         else
           @request = Oj.load request(:post, make_url(), params).body
         end
+
         merge_params(params)
 
         self
@@ -43,7 +49,8 @@ module Gunclip
 
       def update_attributes attrs={}
         attrs.deep_stringify_keys!
-        delete_system_attrs!(attrs.merge! @request)
+
+        delete_system_attrs!(attrs.reverse_update(@request))
         request = request(:put, make_url(id: id, rev: _rev), attrs)
         raise UpdateConflictError if request.status == 409
         merge_params(attrs)
@@ -59,6 +66,10 @@ module Gunclip
         puts method
       end
 
+      def read_attribute_for_validation(key)
+        @request[key.to_s]
+      end
+
       alias_method :rev, :_rev
 
       private
@@ -72,7 +83,7 @@ module Gunclip
       def merge_params params
         id = @request.delete "id"
         @request.delete "ok"
-        @request.merge!(params)
+        @request.update(params)
         change_id_to__id id unless @request["_id"]
       end
 

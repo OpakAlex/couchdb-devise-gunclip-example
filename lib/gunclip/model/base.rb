@@ -37,7 +37,7 @@ module Gunclip
         #To do implement
       end
 
-      def delete
+      def destroy
         request(:delete, make_url(id: id, rev: _rev))
       end
 

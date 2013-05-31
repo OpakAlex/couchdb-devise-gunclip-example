@@ -8,6 +8,8 @@ module Gunclip
       extend Gunclip::Model::Database
       extend Gunclip::Model::Request
 
+      include Gunclip::Model::Callbacks
+
       #To do implements relations
 
       class << self

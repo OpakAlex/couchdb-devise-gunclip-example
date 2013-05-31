@@ -35,6 +35,8 @@ end
 
 gem "devise", git: "git://github.com/plataformatec/devise.git"
 gem 'devise-encryptable'
+gem 'omniauth-twitter'
+gem 'omniauth-facebook'
 
 group :test do
   gem "rspec-core", :git => "git://github.com/rspec/rspec-core.git"

@@ -18,7 +18,7 @@ describe Gunclip::Model::Base do
     it do
       document = described_class.new({id: "test", body: "test_body"})
       document.id.should == "test"
-      document.delete()
+      document.destroy()
     end
   end
 
@@ -28,7 +28,7 @@ describe Gunclip::Model::Base do
       rev = document.rev
       document.update_attributes({body: "updated_body"})
       document.rev.should_not == rev
-      document.delete()
+      document.destroy()
     end
 
     it "updates find document" do
@@ -37,7 +37,7 @@ describe Gunclip::Model::Base do
       rev = document.rev
       document.update_attributes({body: "updated_body"})
       document.rev.should_not == rev
-      document.delete()
+      document.destroy()
     end
 
   end

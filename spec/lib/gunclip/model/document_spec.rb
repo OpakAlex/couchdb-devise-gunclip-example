@@ -24,7 +24,7 @@ describe Gunclip::Model::Document do
       Gunclip::Model::Base.new(id: id, body: "body", type: "my-type")
       document = described_class.find(id)
       document.should be_a_kind_of Gunclip::Model::Base
-      document.delete()
+      document.destroy()
     end
   end
 

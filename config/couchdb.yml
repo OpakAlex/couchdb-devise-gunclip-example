@@ -1,0 +1,11 @@
+development:
+  protocol: http
+  host: 0.0.0.0
+  port: 5984
+  database: "devise-development"
+
+test:
+  protocol: http
+  host: 0.0.0.0
+  port: 5984
+  database: "devise-development"

@@ -53,6 +53,8 @@ class User < Gunclip::Model::Base
   end
 
   def self.find_first args
+    # To do implement find by token
+    puts args
     nil
   end
 

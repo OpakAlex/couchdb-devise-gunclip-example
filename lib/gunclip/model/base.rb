@@ -9,6 +9,12 @@ module Gunclip
       #validations
       include ActiveModel::Validations
 
+      before_save :xyi
+
+      def xyi obj
+        pust obj
+      end
+
       def initialize params
         params.deep_stringify_keys!
         @request = params
@@ -23,16 +29,28 @@ module Gunclip
         (@request["rev"] || @request["_rev"])
       end
 
+      def new?
+        !(id && rev)
+      end
+
+
       def save
+
+        set_timestamps if with_timestamps
+
+        #run_callbacks(:before_save) { self }
+
         attrs = delete_system_attrs
         if id
-          request =  request(:put, make_url(get_id_rev), attrs)
+          request = request(:put, make_url(get_id_rev), attrs)
         else
-          request =  request(:post, make_url(get_id_rev), attrs)
+          request = request(:post, make_url(get_id_rev), attrs)
         end
         raise UpdateConflictError if request.status == 409
         @request = Oj.load request.body
         merge_params(attrs)
+
+
         self
       end
 
@@ -50,8 +68,12 @@ module Gunclip
         self.class.send(:make_url, params)
       end
 
-      def method_missing(method, opts={})
-        puts method
+      def method_missing(method, *args)
+        if method.to_s =~ /=/
+          @request[method.to_s.gsub("=", "")] = args.first
+        else
+          @request[method.to_s]
+        end
       end
 
       def read_attribute_for_validation(key)
@@ -65,9 +87,15 @@ module Gunclip
       end
 
       def self.validates_uniqueness_of(*args)
-        false
-        puts "a #{args}"
+        # To do
       end
+
+      protected
+
+      def with_timestamps
+        true
+      end
+
 
       private
 
@@ -87,8 +115,14 @@ module Gunclip
       def get_id_rev
         h = {}
         h[:rev] = rev if rev.present?
-        h[:id] = id   if id.present?
+        h[:id] = id if id.present?
         h
+      end
+
+      def set_timestamps
+        time = Time.now.to_i
+        self.created_at = time if new?
+        self.updated_at = time
       end
 
     end

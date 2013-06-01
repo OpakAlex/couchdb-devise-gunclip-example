@@ -6,6 +6,8 @@ class User < Gunclip::Model::Base
          :rememberable, :trackable, :validatable, :registerable, :recoverable,
          :encryptable, :omniauthable, :encryptor => :sha512
 
-
+  def id
+    (@request["email"] || @request["_id"] || @request["id"])
+  end
 
 end

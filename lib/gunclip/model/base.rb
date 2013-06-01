@@ -10,16 +10,12 @@ module Gunclip
 
       #validations
       include ActiveModel::Validations
-
-
-      #define_callbacks :before_save
-      #define_callbacks :after_save
+      include ActiveModel::Validations::Callbacks
 
       def initialize params
         params.deep_stringify_keys!
         @request = params
       end
-
 
       def id
         (@request["_id"] || @request["id"])
@@ -35,11 +31,13 @@ module Gunclip
         !(id && rev)
       end
 
+      alias_method :new_record?, :new?
+
 
       def save
         set_timestamps if with_timestamps
 
-        #run_callbacks(:before_save) { self }
+        return false unless valid?()
 
         attrs = delete_system_attrs
         if id
@@ -50,16 +48,17 @@ module Gunclip
         raise UpdateConflictError if request.status == 409
         @request = Oj.load request.body
         merge_params(attrs)
-
-        #run_callbacks(:after_save) {
-        #  puts "ss"
-        #  self }
-
         self
       end
 
       def destroy
-        request(:delete, make_url(id: id, rev: _rev))
+        request = request(:delete, make_url(id: id, rev: _rev))
+        raise UpdateConflictError if request.status == 409
+        true
+      end
+
+      def changed?
+        true
       end
 
       def update_attributes attrs={}
@@ -73,6 +72,7 @@ module Gunclip
       end
 
       def method_missing(method, *args)
+        puts method
         if method.to_s =~ /=/
           @request[method.to_s.gsub("=", "")] = args.first
         else
@@ -89,7 +89,13 @@ module Gunclip
       end
 
       def self.validates_uniqueness_of(*args)
+        puts args
         # To do
+      end
+
+      def self.find_for_authentication(tainted_conditions)
+        puts tainted_conditions
+        #     find_first_by_auth_conditions(tainted_conditions, :active => true)
       end
 
       protected
@@ -98,11 +104,12 @@ module Gunclip
         true
       end
 
-      private
-
       def system_fields
         %w(id _id rev _rev)
       end
+
+      private
+
 
       def delete_system_attrs
         @request.select { |k| !system_fields.member?(k) }

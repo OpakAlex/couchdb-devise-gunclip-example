@@ -21,7 +21,7 @@ describe Gunclip::Model::Document do
     end
 
     it "returns document object when document exist" do
-      Gunclip::Model::Base.new(id: id, body: "body", type: "my-type")
+      Gunclip::Model::Base.create(id: id, body: "body", type: "my-type")
       document = described_class.find(id)
       document.should be_a_kind_of Gunclip::Model::Base
       document.destroy()

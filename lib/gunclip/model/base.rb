@@ -11,28 +11,12 @@ module Gunclip
 
       def initialize params
         params.deep_stringify_keys!
-        if params["_id"].present?
-          @request = params
-        else
-          create(params)
-        end
+        @request = params
       end
 
-      def create params
-        id  = params.delete "id"
-        if id
-          @request = Oj.load request(:put, make_url(id: id), params).body
-        else
-          @request = Oj.load request(:post, make_url(), params).body
-        end
-
-        merge_params(params)
-
-        self
-      end
 
       def id
-        @request["_id"]
+        (@request["_id"] || @request["id"])
       end
 
       def _rev
@@ -40,7 +24,16 @@ module Gunclip
       end
 
       def save
-        #To do implement
+        attrs = delete_system_attrs
+        if id
+          request =  request(:put, make_url(get_id_rev), attrs)
+        else
+          request =  request(:post, make_url(get_id_rev), attrs)
+        end
+        raise UpdateConflictError if request.status == 409
+        @request = Oj.load request.body
+        merge_params(attrs)
+        self
       end
 
       def destroy
@@ -49,13 +42,8 @@ module Gunclip
 
       def update_attributes attrs={}
         attrs.deep_stringify_keys!
-
-        delete_system_attrs!(attrs.reverse_update(@request))
-        request = request(:put, make_url(id: id, rev: _rev), attrs)
-        raise UpdateConflictError if request.status == 409
-        merge_params(attrs)
-        change_rev(Oj.load request.body)
-        self
+        @request.merge!(attrs)
+        save()
       end
 
       def make_url params={}
@@ -72,28 +60,35 @@ module Gunclip
 
       alias_method :rev, :_rev
 
+      def self.create params
+        self.new(params).save()
+      end
+
+      def self.validates_uniqueness_of(*args)
+        false
+        puts "a #{args}"
+      end
+
       private
 
-      def delete_system_attrs! attrs
-        %w(id _id rev _rev).each do |attr|
-          attrs.delete attr
-        end
+      def system_fields
+        %w(id _id rev _rev)
+      end
+
+      def delete_system_attrs
+        @request.select { |k| !system_fields.member?(k) }
       end
 
       def merge_params params
-        id = @request.delete "id"
         @request.delete "ok"
         @request.update(params)
-        change_id_to__id id unless @request["_id"]
       end
 
-      def change_id_to__id id
-        @request["_id"] = id
-      end
-
-      def change_rev request
-        @request["rev"] = request["rev"]
-        @request["_rev"] = request["rev"]
+      def get_id_rev
+        h = {}
+        h[:rev] = rev if rev.present?
+        h[:id] = id   if id.present?
+        h
       end
 
     end

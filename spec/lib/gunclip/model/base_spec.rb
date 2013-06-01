@@ -16,7 +16,7 @@ describe Gunclip::Model::Base do
 
   context ".create" do
     it do
-      document = described_class.new({id: "test", body: "test_body"})
+      document = described_class.create({id: "test", body: "test_body"})
       document.id.should == "test"
       document.destroy()
     end
@@ -32,7 +32,7 @@ describe Gunclip::Model::Base do
     end
 
     it "updates find document" do
-      described_class.new({id: "test", body: "test_body"})
+      described_class.create({id: "test", body: "test_body"})
       document = described_class.find("test")
       rev = document.rev
       document.update_attributes({body: "updated_body"})

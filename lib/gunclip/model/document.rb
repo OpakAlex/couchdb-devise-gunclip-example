@@ -3,6 +3,7 @@ module Gunclip
     class Document
 
       class NotFoundError < Exception; end
+      class UpdateConflictError < Exception; end
 
       extend Gunclip::Model::Configuration
       extend Gunclip::Model::Database

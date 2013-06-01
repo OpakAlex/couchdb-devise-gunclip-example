@@ -5,13 +5,12 @@ require 'spec_helper'
 describe Gunclip::Model::Callbacks do
 
   before :each do
-    @class = GunclipTestModel.new({body: "text"})
+    #@class = GunclipTestModel.new({body: "text"})
   end
 
   context "#before_destroy" do
     it do
-      puts @class.valid?
-      @class.destroy()
+      #@class.destroy()
     end
   end
 

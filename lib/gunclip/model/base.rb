@@ -1,6 +1,8 @@
 module Gunclip
   module Model
+
     class Base < Gunclip::Model::Document
+
 
       include Gunclip::Model::Request
 
@@ -9,11 +11,9 @@ module Gunclip
       #validations
       include ActiveModel::Validations
 
-      before_save :xyi
 
-      def xyi obj
-        pust obj
-      end
+      #define_callbacks :before_save
+      #define_callbacks :after_save
 
       def initialize params
         params.deep_stringify_keys!
@@ -29,13 +29,14 @@ module Gunclip
         (@request["rev"] || @request["_rev"])
       end
 
+      alias_method :rev, :_rev
+
       def new?
         !(id && rev)
       end
 
 
       def save
-
         set_timestamps if with_timestamps
 
         #run_callbacks(:before_save) { self }
@@ -50,6 +51,9 @@ module Gunclip
         @request = Oj.load request.body
         merge_params(attrs)
 
+        #run_callbacks(:after_save) {
+        #  puts "ss"
+        #  self }
 
         self
       end
@@ -80,8 +84,6 @@ module Gunclip
         @request[key.to_s]
       end
 
-      alias_method :rev, :_rev
-
       def self.create params
         self.new(params).save()
       end
@@ -95,7 +97,6 @@ module Gunclip
       def with_timestamps
         true
       end
-
 
       private
 
